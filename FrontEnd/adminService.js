@@ -107,7 +107,7 @@ function loadSummary() {
     .catch(err => alert("Error loading summary"));
 }
 function loadMedicines() {
-    fetch("http://localhost:8080/admin/medicine", {
+    fetch("http://localhost:8080/admin/medicines", {
         headers: { "Authorization": "Bearer " + token }
     })
     .then(res => res.json())
