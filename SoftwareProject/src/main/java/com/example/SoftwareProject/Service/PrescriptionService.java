@@ -9,83 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-//
-//@Service
-//public class PrescriptionService {
-//
-//    @Autowired
-//    private PrescriptionRepo prescriptionRepository;
-//    @Autowired
-//    private UserRepository userRepository;
-//    @Autowired
-//    private DoctorRepo doctorRepository;
-//    @Autowired
-//    private PatientRepo patientRepository;
-//
-//    public Prescription createPrescription(Prescription prescription) {
-//
-//        prescription.setStatus("ACTIVE");   // default status
-//        prescription.setExpiryDate(LocalDate.now().plusDays(7)); // optional logic
-//
-//        return prescriptionRepository.save(prescription);
-//    }
-//    public Prescription getPrescriptionById(Long id) {
-//        return prescriptionRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Prescription not found"));
-//    }
-//
-//
-//    @Transactional
-//    public Prescription createPrescription(
-//            PrescriptionRequest request,
-//            Authentication authentication) {
-//
-//        String username = authentication.getName();
-//
-//        User user = userRepository.findByUsername(username)
-//                .orElseThrow();
-//
-//        Doctor doctor = doctorRepository.findByUser(user)
-//                .orElseThrow();
-//
-//        Patient patient = patientRepository
-//                .findByName(request.getPatientName())
-//                .orElseThrow(() -> new RuntimeException("Patient not found"));
-//
-//        // Create main prescription
-//        Prescription prescription = new Prescription();
-//        prescription.setDoctor(doctor);
-//        prescription.setPatient(patient);
-//        prescription.setDiagnosis(request.getDiagnosis());
-//        prescription.setDate(LocalDate.now());
-//
-//        Prescription savedPrescription =
-//                prescriptionRepository.save(prescription);
-//
-//        // Create prescription items
-//        for (ItemRequest item : request.getItems()) {
-//
-//            Medicine medicine = medicineRepository
-//                    .findById(item.getMedicineId())
-//                    .orElseThrow();
-//
-//            PrescriptionItem prescriptionItem =
-//                    new PrescriptionItem();
-//
-//            prescriptionItem.setPrescription(savedPrescription);
-//            prescriptionItem.setMedicine(medicine);
-//            prescriptionItem.setQuantity(item.getQuantity());
-//
-//            prescriptionItemRepository.save(prescriptionItem);
-//        }
-//
-//        return savedPrescription;
-//    }
-//}
-
-
 
 @Service
 public class PrescriptionService {
@@ -108,75 +34,43 @@ public class PrescriptionService {
     @Autowired
     private PrescriptionItemRepo prescriptionItemRepository;
 
+
+    @Autowired
+    private PatientRepo patientRepo; // You need this!
+
     @Transactional
-    public Prescription createPrescription(
-            PrescriptionRequest request,
-            Authentication authentication) {
+    public Prescription createPrescription(PrescriptionRequest request, String username) {
+        // 1. Find the Doctor (the User account)
+        User doctorUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        String username = authentication.getName();
+        // 2. Find the Patient by Name (Since you inserted them manually)
+        Patient patient = (Patient) patientRepo.findByName(request.getPatientName())
+                .orElseThrow(() -> new RuntimeException("Patient '" + request.getPatientName() + "' not found. Please ensure they are in the system."));
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow();
-
-        Doctor doctor = doctorRepository.findByUser(user)
-                .orElseThrow();
-
-        Patient patient = (Patient) patientRepository
-                .findByName(request.getPatientName())
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
-
+        // 3. Initialize Prescription
         Prescription prescription = new Prescription();
-        prescription.setDoctor(doctor.getUser());
-        //What to put here
-        prescription.setDoctor(doctor.getUser());
-
+        prescription.setPatient(patient); // Link the actual Patient entity
         prescription.setDiagnosis(request.getDiagnosis());
-        prescription.setPatientName(patient.getName());
-        prescription.setDiagnosis(request.getDiagnosis());
-        prescription.setPrescribedAt(LocalDate.now().atStartOfDay());
-        prescription.setStatus("ACTIVE");
+        prescription.setDoctor(doctorUser);
+        prescription.setPrescribedAt(LocalDateTime.now());
+        prescription.setStatus("ACTIVE"); // Important for the Dispensing machine to check
         prescription.setExpiryDate(LocalDate.now().plusDays(7));
 
-        Prescription savedPrescription =
-                prescriptionRepository.save(prescription);
+        // 4. Map the Items
+        List<PrescriptionItem> items = new ArrayList<>();
+        for (ItemRequest itemReq : request.getItems()) {
+            Medicine medicine = medicineRepository.findById(itemReq.getMedicineId())
+                    .orElseThrow(() -> new RuntimeException("Medicine not found"));
 
-//
-//
-        List<PrescriptionItem> prescriptionItems = new ArrayList<>();
-
-        for (ItemRequest item : request.getItems()) {
-            Medicine medicine = medicineRepository.findById(item.getMedicineId())
-                    .orElseThrow();
-
-            PrescriptionItem prescriptionItem = new PrescriptionItem();
-            prescriptionItem.setPrescription(savedPrescription);
-            prescriptionItem.setMedicine(medicine);
-            prescriptionItem.setQuantity(item.getQuantity());
-
-            prescriptionItemRepository.save(prescriptionItem);
-            prescriptionItems.add(prescriptionItem); // add to list
+            PrescriptionItem item = new PrescriptionItem();
+            item.setMedicine(medicine);
+            item.setQuantity(itemReq.getQuantity());
+            item.setPrescription(prescription);
+            items.add(item);
         }
 
-// attach the items to the prescription
-        savedPrescription.setItems(prescriptionItems);
-
-        return savedPrescription;
-//        for (ItemRequest item : request.getItems()) {
-//
-//            Medicine medicine = medicineRepository
-//                    .findById(item.getMedicineId())
-//                    .orElseThrow();
-//
-//            PrescriptionItem prescriptionItem =
-//                    new PrescriptionItem();
-//
-//            prescriptionItem.setPrescription(savedPrescription);
-//            prescriptionItem.setMedicine(medicine);
-//            prescriptionItem.setQuantity(item.getQuantity());
-//
-//            prescriptionItemRepository.save(prescriptionItem);
-//        }
-//
-//        return savedPrescription;
+        prescription.setItems(items);
+        return prescriptionRepository.save(prescription);
     }
 }

@@ -13,17 +13,13 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Medicine {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long medicineId;
 
     private String medicineName;
-
     private String description;
-
     private double price;           // Optional but realistic
-
     private String manufacturer;    // Optional but professional
 }
 

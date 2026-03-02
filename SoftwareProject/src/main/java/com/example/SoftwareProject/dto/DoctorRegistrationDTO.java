@@ -7,7 +7,7 @@ public class DoctorRegistrationDTO {
 
     private String name;
     private String specialization;
-
+    private String phone;
     public String getPhone() {
         return phone;
     }
@@ -48,8 +48,5 @@ public class DoctorRegistrationDTO {
         this.username = username;
     }
 
-    private String phone;
-
-    // getters and setters
 }
 

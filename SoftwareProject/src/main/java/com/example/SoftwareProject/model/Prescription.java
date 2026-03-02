@@ -26,16 +26,22 @@ public class Prescription {
 
     private LocalDateTime prescribedAt;
 
+    //new
     @ManyToOne
+    @JoinColumn(name = "doctor_id")
     private User doctor;
 
-//    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
-//    private List<PrescriptionItem> items;
-
-    private String status;
+    private String status = "ACTIVE";
 
     private LocalDate expiryDate;
 
     @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PrescriptionItem> items = new ArrayList<>();
+
+    //NEW
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+
+
 }

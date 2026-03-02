@@ -23,26 +23,17 @@ public class AdminDoctorController {
         this.doctorService = doctorService;
     }
 
-//    @PostMapping
-//    public ResponseEntity<?> registerDoctor(@RequestBody DoctorRegistrationDTO request) {
-//        return ResponseEntity.ok(adminService.registerDoctor(request));
-//    }
     @PostMapping
     public ResponseEntity<DoctorProfileDTO> registerDoctor(
             @RequestBody DoctorRegistrationDTO request) {
 
         return ResponseEntity.ok(adminService.registerDoctor(request));
     }
-
-
-
     // Get All Doctors
     @GetMapping
     public List<Doctor> getAllDoctors() {
         return doctorService.getAllDoctors();
     }
-
-
 
     // Update Doctor
     @PutMapping("/{id}")

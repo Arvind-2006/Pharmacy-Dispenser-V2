@@ -20,10 +20,12 @@ public class DoctorPrescriptionController {
     @PostMapping("/prescriptions")
     public ResponseEntity<?> createPrescription(
             @RequestBody PrescriptionRequest request,
-            Authentication authentication) {
+            @RequestBody String doctorUsername) {
 
         return ResponseEntity.ok(
-                prescriptionService.createPrescription(request, authentication)
+                prescriptionService.createPrescription(request, doctorUsername)
         );
+
+
     }
 }

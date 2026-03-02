@@ -27,8 +27,11 @@ public class DispenseService {
     private DispenseLogRepo logRepo;
 
     @Transactional
-    public String dispenseMedicine(Long prescriptionId) {
-
+    public String dispenseMedicine(Long prescriptionId,String loggedInUsername) {
+        // 1. Get the User who is currently at the machine
+        System.out.println("Starting dispense for ID: " + prescriptionId + " by User: " +loggedInUsername);
+        User operator = userRepository.findByUsername(loggedInUsername)
+                .orElseThrow(() -> new RuntimeException("Operator not found"));
         // ✅ Fetch prescription only ONCE
         Prescription prescription = prescriptionRepo.findById(prescriptionId)
                 .orElseThrow(() -> new RuntimeException("Prescription not found"));
@@ -65,12 +68,15 @@ public class DispenseService {
 
             inventoryRepo.save(inventory);
 
-            // ✅ Save log
+            //NEW
             DispenseLog log = new DispenseLog();
             log.setPrescription(prescription);
             log.setMedicine(medicine);
+            log.setPatient(prescription.getPatient());// This is only possible because of the fix above!
+            log.setDispensedBy(operator);
             log.setQuantityDispensed(quantityRequired);
             log.setDispenseTime(LocalDateTime.now());
+            log.setStatus("SUCCESS");
 
             logRepo.save(log);
         }
@@ -79,10 +85,8 @@ public class DispenseService {
         prescription.setStatus("DISPENSED");
         prescriptionRepo.save(prescription);
 
-
         return "Medicine Dispensed Successfully";
     }
-
 
     // ✅ Profile method (outside dispense method)
     public User getProfile(String username) {

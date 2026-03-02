@@ -30,7 +30,6 @@ public class Doctor {
 
     // Constructors
     public Doctor() {}
-
     public Doctor(String name, String specialization,
                   String email, String phone) {
         this.name = name;
@@ -38,6 +37,4 @@ public class Doctor {
         this.email = email;
         this.phone = phone;
     }
-
-
 }

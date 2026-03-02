@@ -41,12 +41,11 @@ public class AdminController {
         return ResponseEntity.ok("Deleted Successfully");
     }
 
-    @GetMapping("/medicine")
+    @GetMapping("/medicines")
     public ResponseEntity<?> getAllMedicine() {
         return ResponseEntity.ok(medicineService.getAllMedicines());
     }
 
-    //newly added
     @Autowired
     private MedicineInventoryRepo inventoryRepo;
 
@@ -84,11 +83,6 @@ public class AdminController {
     @Autowired
     private PrescriptionService prescriptionService;
 
-    @GetMapping
-    public List<Prescription> getAll() {
-        return prescriptionRepo.findAll();
-    }
-
     @GetMapping("/pending")
     public List<Prescription> getPending() {
         return prescriptionRepo.findByStatus("PENDING");
@@ -101,8 +95,4 @@ public class AdminController {
         return ResponseEntity.ok(prescriptionRepo.save(p));
     }
 
-//    @PostMapping("/add")
-//    public Prescription createPrescription(@RequestBody Prescription prescription) {
-//        return prescriptionService.createPrescription(prescription);
-//    }
 }
