@@ -1,35 +1,388 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Patient Dashboard</title>
-</head>
-<body>
-<h2>Patient Dashboard</h2>
-<p id="data"></p>
-<button onclick="logout()">Logout</button>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Patient Dashboard — AMDS</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
 
-<script>
-const token = localStorage.getItem("jwt");
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #764ba2 100%);
+        color: #1f2937;
+      }
 
-fetch("http://localhost:8080/patient/dashboard", {
-    headers: {
-        "Authorization": "Bearer " + token
-    }
-})
-.then(res => {
-    if (!res.ok) {
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      aside {
+        width: 240px;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 28px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      aside h1 {
+        font-size: 1.05rem;
+        color: #9b2d6b;
+        margin-bottom: 12px;
+        letter-spacing: 0.04em;
+      }
+
+      aside button {
+        text-align: left;
+        padding: 12px 14px;
+        border: none;
+        border-radius: 12px;
+        background: transparent;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      }
+
+      aside button:hover,
+      aside button.active {
+        background: linear-gradient(90deg, rgba(255, 0, 127, 0.15), rgba(188, 19, 254, 0.15));
+        color: #be185d;
+        box-shadow: 0 0 12px rgba(255, 0, 127, 0.2);
+      }
+
+      .logout {
+        margin-top: auto;
+        background: linear-gradient(to right, #8a618f, #ff007f) !important;
+        color: #fff !important;
+        text-align: center !important;
+        font-weight: 600;
+      }
+
+      main {
+        flex: 1;
+        padding: 28px 32px 40px;
+        overflow: auto;
+      }
+
+      .panel {
+        display: none;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        max-width: 960px;
+      }
+
+      .panel.visible {
+        display: block;
+      }
+
+      .panel h2 {
+        font-size: 1.35rem;
+        color: #9b2d6b;
+        margin-bottom: 8px;
+      }
+
+      .panel p.lead {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #f3e8ff;
+      }
+
+      th {
+        color: #831843;
+        font-weight: 600;
+        background: rgba(255, 0, 127, 0.06);
+      }
+
+      tbody tr:hover {
+        background: rgba(188, 19, 254, 0.08);
+      }
+
+      .muted {
+        color: #9ca3af;
+        font-size: 13px;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(188, 19, 254, 0.15);
+        color: #7c3aed;
+      }
+
+      .err {
+        color: #e11d48;
+        font-weight: 600;
+        margin-top: 12px;
+      }
+
+      pre.raw {
+        margin-top: 12px;
+        padding: 12px;
+        background: #faf5ff;
+        border-radius: 10px;
+        overflow: auto;
+        font-size: 12px;
+        max-height: 420px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside>
+        <h1>PATIENT</h1>
+        <button type="button" class="nav active" data-panel="overview">Overview</button>
+        <button type="button" class="nav" data-panel="prescriptions">Prescriptions</button>
+        <button type="button" class="nav" data-panel="dispense">Dispense status</button>
+        <button type="button" class="nav" data-panel="history">Treatment history</button>
+        <button type="button" class="logout" id="logoutBtn">Logout</button>
+      </aside>
+      <main>
+        <section id="panel-overview" class="panel visible">
+          <h2>Welcome</h2>
+          <p class="lead">Your profile and quick dashboard check.</p>
+          <p id="profileSummary" class="muted">Loading profile…</p>
+          <p id="dashMsg" class="muted" style="margin-top: 12px"></p>
+        </section>
+
+        <section id="panel-prescriptions" class="panel">
+          <h2>My prescriptions</h2>
+          <p class="lead">Records from the prescription table, including prescribed medicines.</p>
+          <div id="prescriptionsOut"></div>
+        </section>
+
+        <section id="panel-dispense" class="panel">
+          <h2>Medical dispense status</h2>
+          <p class="lead">Dispense log entries for your account (quantity, time, status).</p>
+          <div id="dispenseOut"></div>
+        </section>
+
+        <section id="panel-history" class="panel">
+          <h2>Treatment history</h2>
+          <p class="lead">Timeline of diagnoses and prescription status from your care record.</p>
+          <div id="historyOut"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const BASE_URL = "http://localhost:8080";
+      const token = localStorage.getItem("jwt");
+
+      function authHeaders() {
+        return {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        };
+      }
+
+      function redirectLogin() {
+        localStorage.removeItem("jwt");
+        localStorage.removeItem("role");
         window.location.href = "login.html";
-    }
-    return res.text();
-})
-.then(data => {
-    document.getElementById("data").innerText = data;
-});
+      }
 
-function logout() {
-    localStorage.removeItem("jwt");
-    window.location.href = "login.html";
-}
-</script>
-</body>
+      if (!token) {
+        redirectLogin();
+      }
+
+      document.querySelectorAll(".nav").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-panel");
+          document.querySelectorAll(".nav").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach((p) => p.classList.remove("visible"));
+          document.getElementById("panel-" + id).classList.add("visible");
+        });
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", redirectLogin);
+
+      function fetchJson(path) {
+        return fetch(BASE_URL + path, { headers: authHeaders() }).then((res) => {
+          if (res.status === 401 || res.status === 403) {
+            redirectLogin();
+            throw new Error("Unauthorized");
+          }
+          if (!res.ok) throw new Error("Request failed: " + res.status);
+          return res.json();
+        });
+      }
+
+      function fmtDate(s) {
+        if (!s) return "—";
+        try {
+          return new Date(s).toLocaleString();
+        } catch {
+          return s;
+        }
+      }
+
+      fetchJson("/patient/dashboard")
+        .then((d) => {
+          document.getElementById("dashMsg").textContent = d.message + " · " + d.username;
+        })
+        .catch(() => {});
+
+      fetchJson("/patient/profile")
+        .then((p) => {
+          document.getElementById("profileSummary").innerHTML =
+            "<strong>" +
+            escapeHtml(p.name) +
+            "</strong><br/>" +
+            escapeHtml(p.email) +
+            (p.phone ? " · " + escapeHtml(p.phone) : "") +
+            (p.age != null ? "<br/>Age: " + escapeHtml(String(p.age)) : "") +
+            (p.gender ? " · " + escapeHtml(p.gender) : "") +
+            (p.address ? "<br/>" + escapeHtml(p.address) : "");
+        })
+        .catch(() => {
+          document.getElementById("profileSummary").textContent =
+            "Could not load profile (ensure your account is linked to a patient record).";
+        });
+
+      function escapeHtml(s) {
+        if (!s) return "";
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderPrescriptions(list) {
+        const el = document.getElementById("prescriptionsOut");
+        if (!list.length) {
+          el.innerHTML = '<p class="muted">No prescriptions on file.</p>';
+          return;
+        }
+        let html =
+          '<table><thead><tr><th>ID</th><th>Prescribed</th><th>Status</th><th>Diagnosis</th><th>Items</th></tr></thead><tbody>';
+        list.forEach((rx) => {
+          const items = (rx.items || [])
+            .map((it) => {
+              const name = it.medicine && it.medicine.medicineName ? it.medicine.medicineName : "Medicine";
+              return escapeHtml(name) + " × " + it.quantity;
+            })
+            .join(", ");
+          html +=
+            "<tr><td>" +
+            rx.id +
+            "</td><td>" +
+            fmtDate(rx.prescribedAt) +
+            '</td><td><span class="pill">' +
+            escapeHtml(rx.status || "—") +
+            "</span></td><td>" +
+            escapeHtml(rx.diagnosis || "—") +
+            "</td><td>" +
+            (items || "—") +
+            "</td></tr>";
+        });
+        html += "</tbody></table>";
+        el.innerHTML = html;
+      }
+
+      function renderDispense(list) {
+        const el = document.getElementById("dispenseOut");
+        if (!list.length) {
+          el.innerHTML = '<p class="muted">No dispense events yet.</p>';
+          return;
+        }
+        let html =
+          '<table><thead><tr><th>Time</th><th>Status</th><th>Qty</th><th>Medicine</th><th>Prescription</th></tr></thead><tbody>';
+        list.forEach((l) => {
+          const med = l.medicine && l.medicine.medicineName ? l.medicine.medicineName : "—";
+          const pr = l.prescription ? "#" + l.prescription.id : "—";
+          html +=
+            "<tr><td>" +
+            fmtDate(l.dispenseTime) +
+            '</td><td><span class="pill">' +
+            escapeHtml(l.status || "—") +
+            "</span></td><td>" +
+            l.quantityDispensed +
+            "</td><td>" +
+            escapeHtml(med) +
+            "</td><td>" +
+            pr +
+            "</td></tr>";
+        });
+        html += "</tbody></table>";
+        el.innerHTML = html;
+      }
+
+      function renderHistory(list) {
+        const el = document.getElementById("historyOut");
+        if (!list.length) {
+          el.innerHTML = '<p class="muted">No treatment history yet.</p>';
+          return;
+        }
+        let html =
+          '<table><thead><tr><th>Prescription</th><th>Date</th><th>Diagnosis</th><th>Status</th></tr></thead><tbody>';
+        list.forEach((h) => {
+          html +=
+            "<tr><td>#" +
+            h.prescriptionId +
+            "</td><td>" +
+            fmtDate(h.prescribedAt) +
+            "</td><td>" +
+            escapeHtml(h.diagnosis || "—") +
+            '</td><td><span class="pill">' +
+            escapeHtml(h.status || "—") +
+            "</span></td></tr>";
+        });
+        html += "</tbody></table>";
+        el.innerHTML = html;
+      }
+
+      fetchJson("/patient/prescriptions")
+        .then(renderPrescriptions)
+        .catch((e) => {
+          document.getElementById("prescriptionsOut").innerHTML =
+            '<p class="err">' + escapeHtml(e.message) + "</p>";
+        });
+
+      fetchJson("/patient/dispense-status")
+        .then(renderDispense)
+        .catch((e) => {
+          document.getElementById("dispenseOut").innerHTML =
+            '<p class="err">' + escapeHtml(e.message) + "</p>";
+        });
+
+      fetchJson("/patient/treatment-history")
+        .then(renderHistory)
+        .catch((e) => {
+          document.getElementById("historyOut").innerHTML =
+            '<p class="err">' + escapeHtml(e.message) + "</p>";
+        });
+    </script>
+  </body>
 </html>

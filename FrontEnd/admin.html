@@ -200,6 +200,9 @@ input:focus { border-color: var(--primary-color); }
         <div style="padding: 20px 25px 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px;">Staff Management</div>
         <button onclick="showDoctors()">View Doctor Staff</button>
         <button onclick="showAddDoctorForm()" style="color: var(--primary-color);">+ Register Doctor</button>
+
+        <div style="padding: 20px 25px 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px;">Patient Management</div>
+        <button onclick="showAddPatientForm()" style="color: var(--primary-color);">+ Add Patient</button>
     </div>
 
     <button onclick="logout()" class="logout-btn">Logout</button>
@@ -258,6 +261,27 @@ input:focus { border-color: var(--primary-color); }
                     <button onclick="hideAddDoctorForm()" style="background: transparent; color: #64748b; border:none; margin-left:15px; cursor:pointer;">Cancel</button>
                 </div>
                 <p id="doctorResponse" style="margin-top:10px; font-size:13px;"></p>
+            </div>
+
+            <div id="addPatientForm" class="form-section" style="display: none">
+                <h3 style="margin-bottom: 20px;">Register New Patient</h3>
+                <label style="font-size: 12px; font-weight: 600;">Account credentials</label>
+                <input type="text" id="patientUsername" placeholder="Username" autocomplete="username" />
+                <input type="password" id="patientPassword" placeholder="Password" autocomplete="new-password" />
+
+                <label style="font-size: 12px; font-weight: 600;">Profile details</label>
+                <input type="text" id="patientFullName" placeholder="Full name" />
+                <input type="email" id="patientEmail" placeholder="Email" />
+                <input type="number" id="patientAge" placeholder="Age (optional)" min="0" />
+                <input type="text" id="patientGender" placeholder="Gender (optional)" />
+                <input type="text" id="patientPhone" placeholder="Phone (optional)" />
+                <input type="text" id="patientAddress" placeholder="Address (optional)" />
+
+                <div style="margin-top: 10px;">
+                    <button onclick="addPatient()" style="background: var(--primary-color); color:white; border:none; padding: 12px 30px; border-radius: 8px; cursor:pointer; font-weight:600;">Register Patient</button>
+                    <button onclick="hideAddPatientForm()" style="background: transparent; color: #64748b; border:none; margin-left:15px; cursor:pointer;">Cancel</button>
+                </div>
+                <p id="patientResponse" style="margin-top:10px; font-size:13px;"></p>
             </div>
 
             <div id="addMedicineForm" class="form-section" style="display: none">

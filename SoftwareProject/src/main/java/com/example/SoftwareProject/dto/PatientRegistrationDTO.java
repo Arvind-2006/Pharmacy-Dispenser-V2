@@ -1,15 +1,30 @@
 package com.example.SoftwareProject.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class PatientRegistrationDTO {
 
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 64, message = "Username must be 3–64 characters")
     private String username;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 128, message = "Password must be at least 6 characters")
     private String password;
 
+    @NotBlank(message = "Full name is required")
     private String name;
+
     private Integer age;
+
     private String gender;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Enter a valid email address")
     private String email;
+
     private String phone;
     private String address;
 

@@ -1,7 +1,7 @@
 package com.example.SoftwareProject.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,6 +35,7 @@ public class Prescription {
 
     private LocalDate expiryDate;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PrescriptionItem> items = new ArrayList<>();
 

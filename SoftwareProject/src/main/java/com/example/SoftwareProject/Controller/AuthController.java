@@ -1,16 +1,16 @@
 package com.example.SoftwareProject.Controller;
 
+import com.example.SoftwareProject.Service.PatientAccountService;
 import com.example.SoftwareProject.dto.LoginRequest;
-import com.example.SoftwareProject.model.User;
-import com.example.SoftwareProject.repositories.UserRepository;
+import com.example.SoftwareProject.dto.PatientRegistrationDTO;
 import com.example.SoftwareProject.security.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,22 +26,18 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private AuthenticationManager authenticationManager;
+
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    private PatientAccountService patientAccountService;
 
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username already exists");
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-
-        return ResponseEntity.ok("User Registered Successfully");
+    /**
+     * Self-service signup: creates {@code User} with {@code ROLE_PATIENT} and linked {@code Patient} row.
+     */
+    @PostMapping("/register/patient")
+    public ResponseEntity<String> registerPatient(@Valid @RequestBody PatientRegistrationDTO dto) {
+        patientAccountService.registerPatient(dto);
+        return ResponseEntity.ok("Account created. You can sign in now.");
     }
 
     @PostMapping("/login")

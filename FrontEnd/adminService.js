@@ -26,10 +26,95 @@ function loadInventory() {
 
 //Show Add Doctor Form
 function showAddDoctorForm() {
+    document.getElementById("addPatientForm").style.display = "none";
     document.getElementById("addDoctorForm").style.display = "block";
 }
 function hideAddDoctorForm() {
     document.getElementById("addDoctorForm").style.display = "none";
+}
+
+function showAddPatientForm() {
+    document.getElementById("addDoctorForm").style.display = "none";
+    document.getElementById("addMedicineForm").style.display = "none";
+    document.getElementById("doctorsList").style.display = "none";
+    document.getElementById("addPatientForm").style.display = "block";
+    document.getElementById("patientResponse").innerText = "";
+}
+
+function hideAddPatientForm() {
+    document.getElementById("addPatientForm").style.display = "none";
+}
+
+function addPatient() {
+    const token = localStorage.getItem("jwt");
+
+    if (!token) {
+        alert("You are not logged in!");
+        return;
+    }
+
+    const username = document.getElementById("patientUsername").value.trim();
+    const password = document.getElementById("patientPassword").value;
+    const name = document.getElementById("patientFullName").value.trim();
+    const email = document.getElementById("patientEmail").value.trim();
+    const ageVal = document.getElementById("patientAge").value.trim();
+    const gender = document.getElementById("patientGender").value.trim();
+    const phone = document.getElementById("patientPhone").value.trim();
+    const address = document.getElementById("patientAddress").value.trim();
+
+    if (!username || !password || !name || !email) {
+        document.getElementById("patientResponse").innerText =
+            "Username, password, full name, and email are required.";
+        return;
+    }
+
+    const body = {
+        username: username,
+        password: password,
+        name: name,
+        email: email,
+        phone: phone || null,
+        address: address || null,
+        gender: gender || null,
+    };
+    if (ageVal !== "") {
+        const age = parseInt(ageVal, 10);
+        if (!Number.isNaN(age) && age >= 0) {
+            body.age = age;
+        }
+    }
+
+    fetch("http://localhost:8080/admin/patients", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify(body),
+    })
+        .then(async (response) => {
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(text || "Failed to register patient");
+            }
+            return text;
+        })
+        .then((msg) => {
+            document.getElementById("patientUsername").value = "";
+            document.getElementById("patientPassword").value = "";
+            document.getElementById("patientFullName").value = "";
+            document.getElementById("patientEmail").value = "";
+            document.getElementById("patientAge").value = "";
+            document.getElementById("patientGender").value = "";
+            document.getElementById("patientPhone").value = "";
+            document.getElementById("patientAddress").value = "";
+            hideAddPatientForm();
+            alert(msg);
+        })
+        .catch((error) => {
+            console.error(error);
+            document.getElementById("patientResponse").innerText = error.message;
+        });
 }
 
 function addDoctor() {
@@ -200,6 +285,7 @@ function loadLogs() {
 function showDoctors() {
 
     const token = localStorage.getItem("jwt");
+    document.getElementById("addPatientForm").style.display = "none";
 
     fetch("http://localhost:8080/admin/doctors", {
         method: "GET",
@@ -283,6 +369,7 @@ function deleteDoctor(id) {
 }
 
 function showAddMedicineForm() {
+    document.getElementById("addPatientForm").style.display = "none";
     document.getElementById("addMedicineForm").style.display = "block";
 }
 
