@@ -8,6 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "prescription_item")
 public class PrescriptionItem {
 
     @Id
@@ -15,10 +16,12 @@ public class PrescriptionItem {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "prescription_id")
     @JsonBackReference
     private Prescription prescription;
 
     @ManyToOne
+    @JoinColumn(name = "medicine_id", referencedColumnName = "medicine_id")
     private Medicine medicine;
 
     private int quantity;

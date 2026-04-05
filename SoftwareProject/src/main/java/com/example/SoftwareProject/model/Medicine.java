@@ -15,11 +15,19 @@ import java.time.LocalDate;
 public class Medicine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "medicine_id")
     private Long medicineId;
 
+    @Column(name = "medicine_name")
     private String medicineName;
+    
+    @Column(name = "description")
     private String description;
+    
+    @Column(name = "price")
     private double price;           // Optional but realistic
+    
+    @Column(name = "manufacturer")
     private String manufacturer;    // Optional but professional
 }
 
