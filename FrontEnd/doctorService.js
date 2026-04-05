@@ -2,7 +2,7 @@ const BASE_URL = "http://localhost:8080";
 
 // Toggles visibility between views
 function showSection(sectionId) {
-    const sections = ['doctorsProfile', 'addPrescriptionForm', 'welcomeScreen'];
+    const sections = ['doctorsProfile', 'addPrescriptionForm', 'welcomeScreen', 'viewPrescriptionForm'];
     sections.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = (id === sectionId) ? "block" : "none";
@@ -37,6 +37,41 @@ function viewProfile() {
 // PRESCRIPTION LOGIC
 function showAddPrescriptionForm() {
     showSection('addPrescriptionForm');
+}
+
+// VIEW PRESCRIPTIONS
+function showViewPrescriptionForm() {
+    const token = localStorage.getItem("jwt");
+    fetch(`${BASE_URL}/doctor/prescriptions`, {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+        showSection('viewPrescriptionForm');
+        const prescriptionBody = document.getElementById("prescriptionBody");
+        const noPrescriptionsMessage = document.getElementById("noPrescriptionsMessage");
+        
+        if (data && data.length > 0) {
+            noPrescriptionsMessage.style.display = "none";
+            prescriptionBody.innerHTML = data.map(prescription => `
+                <tr>
+                    <td>${prescription.patientName}</td>
+                    <td>${prescription.diagnosis}</td>
+                    <td>${prescription.items && prescription.items[0] ? prescription.items[0].medicineId : 'N/A'}</td>
+                    <td>${prescription.items && prescription.items[0] ? prescription.items[0].quantity : 'N/A'}</td>
+                    <td>${new Date(prescription.createdAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        } else {
+            noPrescriptionsMessage.style.display = "block";
+            prescriptionBody.innerHTML = '';
+        }
+    })
+    .catch(err => {
+        alert("Error loading prescriptions: " + err.message);
+        console.error(err);
+    });
 }
 
 document.getElementById("prescriptionForm").addEventListener("submit", function(e) {

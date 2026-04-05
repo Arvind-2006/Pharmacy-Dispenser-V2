@@ -419,3 +419,134 @@ function addMedicine() {
             "Error adding medicine!";
     });
 }
+
+// ============================================
+// DISPENSE MEDICINE FUNCTIONS
+// ============================================
+
+function loadDispenseForm() {
+    document.getElementById("dispenseForm").style.display = "block";
+    document.getElementById("dispenseLogs").style.display = "none";
+    document.getElementById("addDoctorForm").style.display = "none";
+    document.getElementById("addPatientForm").style.display = "none";
+    document.getElementById("addMedicineForm").style.display = "none";
+    document.getElementById("doctorsList").style.display = "none";
+    
+    const token = localStorage.getItem("jwt");
+    const prescriptionsList = document.getElementById("prescriptionsList");
+    
+    if (!token) {
+        prescriptionsList.innerHTML = "<p>Please login first</p>";
+        return;
+    }
+
+    // Fetch all prescriptions from the admin endpoint
+    fetch("http://localhost:8080/admin/prescriptions", {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data || data.length === 0) {
+            prescriptionsList.innerHTML = "<p style='text-align: center; color: #94a3b8;'>No prescriptions available</p>";
+            return;
+        }
+        
+        prescriptionsList.innerHTML = data.map(prescription => `
+            <div class="prescription-card" onclick="dispenseMedicine(${prescription.id}, '${prescription.patient?.name || 'Unknown'}')">
+                <h4>👤 ${prescription.patient?.name || 'Unknown'}</h4>
+                <p>📋 Diagnosis: ${prescription.diagnosis}</p>
+                <p>💊 Medicine: ${prescription.items && prescription.items[0] ? prescription.items[0].medicine?.medicineName || 'N/A' : 'N/A'}</p>
+                <p>📦 Qty: ${prescription.items && prescription.items[0] ? prescription.items[0].quantity : 'N/A'}</p>
+                <p>📅 Issued: ${new Date(prescription.prescribedAt).toLocaleDateString()}</p>
+                <p>Status: <span style="background: #667eea; padding: 2px 8px; border-radius: 4px; color: white; font-size: 11px;">${prescription.status}</span></p>
+            </div>
+        `).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        prescriptionsList.innerHTML = "<p style='color: #ef4444;'>Error loading prescriptions</p>";
+    });
+}
+
+function dispenseMedicine(prescriptionId, patientName) {
+    if (!confirm(`Dispense medicine for patient ${patientName}?`)) {
+        return;
+    }
+
+    const token = localStorage.getItem("jwt");
+    
+    fetch(`http://localhost:8080/admin/dispense/${prescriptionId}`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.text().then(text => {
+                throw new Error(text || "Failed to dispense");
+            });
+        }
+        return res.text();
+    })
+    .then(data => {
+        document.getElementById("dispenseResponse").innerText = 
+            `✅ ${data}`;
+        document.getElementById("dispenseResponse").style.color = "#10b981";
+        
+        setTimeout(() => {
+            loadDispenseForm(); // Refresh the list
+        }, 1500);
+    })
+    .catch(err => {
+        console.error("Dispense error:", err);
+        document.getElementById("dispenseResponse").innerText = 
+            `❌ Error: ${err.message}`;
+        document.getElementById("dispenseResponse").style.color = "#ef4444";
+    });
+}
+
+function loadDispenseLogs() {
+    document.getElementById("dispenseLogs").style.display = "block";
+    document.getElementById("dispenseForm").style.display = "none";
+    document.getElementById("addDoctorForm").style.display = "none";
+    document.getElementById("addPatientForm").style.display = "none";
+    document.getElementById("addMedicineForm").style.display = "none";
+    document.getElementById("doctorsList").style.display = "none";
+    
+    const token = localStorage.getItem("jwt");
+    
+    fetch("http://localhost:8080/admin/dispense/logs", {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const logsBody = document.getElementById("logsBody");
+        
+        if (!data || data.length === 0) {
+            logsBody.innerHTML = "<tr><td colspan='6' style='text-align: center; color: #94a3b8;'>No dispense logs yet</td></tr>";
+            return;
+        }
+        
+        logsBody.innerHTML = data.map(log => `
+            <tr>
+                <td>${log.patient?.name || 'Unknown'}</td>
+                <td>${log.medicine?.medicineName || 'Unknown'}</td>
+                <td>${log.quantityDispensed}</td>
+                <td>${log.dispensedBy?.name || 'Admin'}</td>
+                <td>${new Date(log.dispenseTime).toLocaleString()}</td>
+                <td><span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${log.status}</span></td>
+            </tr>
+        `).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        document.getElementById("logsBody").innerHTML = "<tr><td colspan='6' style='text-align: center; color: #ef4444;'>Error loading logs</td></tr>";
+    });
+}
+
+function closeDispenseForm() {
+    document.getElementById("dispenseForm").style.display = "none";
+}
+
+function closeDicnpenseLogs() {
+    document.getElementById("dispenseLogs").style.display = "none";
+}

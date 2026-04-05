@@ -33,6 +33,25 @@
         }
         .nav-links button:hover { background: rgba(255,255,255,0.05); color: var(--doctor-primary); padding-left: 30px; }
 
+        /* VIEW PRESCRIPTION SIDEBAR */
+        .view-prescription-sidebar {
+            width: 100%; max-width: 400px; background: #f8f9fa; padding: 25px;
+            border-radius: 12px; margin-top: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .view-prescription-sidebar h4 { color: var(--doctor-primary); margin-bottom: 15px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .prescription-list { list-style: none; }
+        .prescription-item { 
+            padding: 15px; background: white; margin-bottom: 10px; border-radius: 8px;
+            border-left: 4px solid var(--doctor-primary); cursor: pointer; transition: 0.3s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .prescription-item:hover { transform: translateX(5px); box-shadow: 0 2px 8px rgba(0,184,148,0.15); }
+        .prescription-item-info { flex: 1; }
+        .prescription-item-patient { font-weight: 600; color: #2d3436; font-size: 14px; }
+        .prescription-item-date { font-size: 12px; color: #95a5a6; margin-top: 3px; }
+        .prescription-badge { background: var(--doctor-primary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .no-prescriptions { color: #7f8c8d; text-align: center; padding: 20px; font-size: 14px; }
+
         .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .logout-btn { width: 100%; padding: 12px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
@@ -70,6 +89,7 @@
         <button onclick="viewProfile()">👤 My Profile</button>
         <div class="nav-label">Patient Care</div>
         <button onclick="showAddPrescriptionForm()">📝 Add Prescription</button>
+        <button onclick="showViewPrescriptionForm()">👁️ View Prescriptions</button>
     </div>
     <div class="sidebar-footer">
         <button onclick="logout()" class="logout-btn">Logout</button>
@@ -116,6 +136,26 @@
                         <button type="button" class="btn-cancel" onclick="hideAll()">Cancel</button>
                     </div>
                 </form>
+            </div>
+
+            <div id="viewPrescriptionForm" style="display: none;">
+                <div class="section-header">
+                    <h3>My Prescriptions</h3>
+                    <button onclick="hideAll()" style="color: #ff4757; border: none; background: none; cursor: pointer; font-weight: 600;">Cancel ✖</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Diagnosis</th>
+                            <th>Medicine ID</th>
+                            <th>Quantity</th>
+                            <th>Issued Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prescriptionBody"></tbody>
+                </table>
+                <div id="noPrescriptionsMessage" class="no-prescriptions" style="margin-top: 30px;">No prescriptions issued yet.</div>
             </div>
         </div>
     </div>

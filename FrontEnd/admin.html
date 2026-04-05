@@ -175,6 +175,34 @@ input:focus { border-color: var(--primary-color); }
     color: white;
     border: none;
     cursor: pointer;
+}
+
+/* DISPENSE FORM STYLING */
+.prescription-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.prescription-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.prescription-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.prescription-card p {
+    margin: 5px 0;
+    font-size: 13px;
+    opacity: 0.95;
 }</style>
   </head>
   <body>
@@ -200,6 +228,10 @@ input:focus { border-color: var(--primary-color); }
         <div style="padding: 20px 25px 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px;">Staff Management</div>
         <button onclick="showDoctors()">View Doctor Staff</button>
         <button onclick="showAddDoctorForm()" style="color: var(--primary-color);">+ Register Doctor</button>
+
+        <div style="padding: 20px 25px 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px;">Dispensing</div>
+        <button onclick="loadDispenseForm()">💊 Dispense Medicine</button>
+        <button onclick="loadDispenseLogs()">📋 Dispense Logs</button>
 
         <div style="padding: 20px 25px 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px;">Patient Management</div>
         <button onclick="showAddPatientForm()" style="color: var(--primary-color);">+ Add Patient</button>
@@ -298,7 +330,41 @@ input:focus { border-color: var(--primary-color); }
                 <p id="medicineResponse" style="margin-top:10px; font-size:13px;"></p>
             </div>
 
-        </div> <footer style="margin-top: 30px; text-align: center; font-size: 12px; color: #94a3b8;">
+            <!-- DISPENSE MEDICINE FORM -->
+            <div id="dispenseForm" style="display: none">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 20px;">
+                    <h3 style="margin:0;">Dispense Medicine from Prescriptions</h3>
+                    <button onclick="closeDispenseForm()" style="background: #f1f5f9; color: #475569; border:none; padding: 5px 15px; border-radius: 5px; cursor:pointer;">Close</button>
+                </div>
+                <p style="color: #64748b; margin-bottom: 15px;">Select a prescription to dispense medicine:</p>
+                <div id="prescriptionsList" style="display: grid; gap: 12px; max-height: 400px; overflow-y: auto;">
+                    <p style="color: #94a3b8; text-align: center;">Loading prescriptions...</p>
+                </div>
+                <p id="dispenseResponse" style="margin-top:15px; font-size:13px; color: #10b981;"></p>
+            </div>
+
+            <!-- DISPENSE LOGS -->
+            <div id="dispenseLogs" style="display: none">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 20px;">
+                    <h3 style="margin:0;">Dispensing History</h3>
+                    <button onclick="closeDicnpenseLogs()" style="background: #f1f5f9; color: #475569; border:none; padding: 5px 15px; border-radius: 5px; cursor:pointer;">Close</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Medicine</th>
+                            <th>Quantity</th>
+                            <th>Dispensed By</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsBody"></tbody>
+                </table>
+            </div>
+        </div>
+ <footer style="margin-top: 30px; text-align: center; font-size: 12px; color: #94a3b8;">
             &copy; 2026 Hospital Management System | Server Status: <span style="color: #10b981;">Online</span>
         </footer>
     </div>

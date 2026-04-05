@@ -10,10 +10,12 @@ import com.example.SoftwareProject.repositories.MedicineInventoryRepo;
 import com.example.SoftwareProject.repositories.PrescriptionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -86,6 +88,11 @@ public class AdminController {
     @GetMapping("/pending")
     public List<Prescription> getPending() {
         return prescriptionRepo.findByStatus("PENDING");
+    }
+
+    @GetMapping("/prescriptions")
+    public List<Prescription> getAllPrescriptions() {
+        return prescriptionRepo.findAll();
     }
 
     @PutMapping("/{id}/approve")
